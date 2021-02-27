@@ -17,39 +17,38 @@ public class JukeboxQueue : UdonSharpBehaviour
     [UdonSynced] private VRCUrl _queue7;
     [UdonSynced] private VRCUrl _queue8;
     [UdonSynced] private VRCUrl _queue9;
-    private VRCUrl[] _queue;
-    [UdonSynced] public int _queuePointer;
-    private int _lastQueuePointerpos;
+    private VRCUrl[] _queue = new VRCUrl[11];
+    [UdonSynced] public int syncedPointer;
     private int _maxQueueSize = 10;
-    void Start()
-    {
-        _queue = new VRCUrl[_maxQueueSize++];
-    }
+    private int _songcounter;
+    [UdonSynced] int syncedcounter;
 
     public void AddToQueue(VRCUrl pUrl)
     {
-        if (_queuePointer <= _maxQueueSize)
+        if (syncedPointer <= _maxQueueSize)
         {
-            _queue[_queuePointer] = pUrl;
-            _queuePointer++;
+            _queue[syncedPointer] = pUrl;
+            syncedPointer++;
             PushArray();
+            syncedcounter++;
         }
-        Debug.Log("Songs in que = " + _queuePointer);
+        Debug.Log("Songs in que = " + syncedPointer);
     }
     public void Skip()
     {
    
-        if (_queuePointer > 1)
+        if (syncedPointer > 1)
         {
             for (int i = 0; i < _queue.Length - 1; i++)
             {
                 _queue[i] = _queue[i+1];
             }
-            _queuePointer--;
+            syncedPointer--;
             PushArray();
             Debug.Log("Queue: Skiped");
+            syncedcounter++;
         }
-        Debug.Log("Songs in que = " + _queuePointer);
+        Debug.Log("Songs in que = " + syncedPointer);
         if (_queue[0] != null) Debug.Log("0: " + _queue[0].Get());
         if (_queue[1] != null) Debug.Log("1: " + _queue[1].Get());
         if (_queue[2] != null) Debug.Log("2: " + _queue[2].Get());
@@ -63,10 +62,13 @@ public class JukeboxQueue : UdonSharpBehaviour
     }
     public override void OnDeserialization()
     {
-        if(_queuePointer != _lastQueuePointerpos)
+        
+        if(_songcounter != syncedcounter)
         {
+            Debug.Log("try to sync");
+            _songcounter = syncedcounter;
+            //_localPointer = syncedPointer;
             Debug.Log("Queue: Updaded The Local Aray");
-            _lastQueuePointerpos = _queuePointer;
             UpdateArray();
         }
     }
@@ -83,9 +85,11 @@ public class JukeboxQueue : UdonSharpBehaviour
         _queue7 = _queue[7];
         _queue8 = _queue[8];
         _queue9 = _queue[9];
+        Debug.Log("Pushing Done");
     }
     private void UpdateArray()
     {
+        Debug.Log("Updating Array");
         _queue[0] = _queue0;
         _queue[1] = _queue1;
         _queue[2] = _queue2;
@@ -96,6 +100,7 @@ public class JukeboxQueue : UdonSharpBehaviour
         _queue[7] = _queue7;
         _queue[8] = _queue8;
         _queue[9] = _queue9;
+        Debug.Log("Updating Done");
     }
 
 }
